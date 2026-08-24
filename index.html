@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ตารางแข่งขันแบดมินตันคู่ผสม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1F2A;
+    --panel:#123247;
+    --panel-2:#0E2938;
+    --line:#F2F5F0;
+    --men:#2F86D6;
+    --men-dim:#1c4f80;
+    --women:#E85C4A;
+    --women-dim:#8f392f;
+    --accent:#C9E76B;
+    --muted:#7C93A3;
+    --win:#55C57A;
+    --danger:#E85C4A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image:
+      linear-gradient(var(--panel-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--panel-2) 1px, transparent 1px);
+    background-size: 48px 48px;
+    color:var(--line);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:980px;margin:0 auto;padding:20px 16px 60px;}
+
+  header{padding:28px 4px 10px;}
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    color:var(--accent);
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px, 6vw, 42px);
+    margin:6px 0 4px;
+    letter-spacing:.01em;
+  }
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 18px;line-height:1.6;}
+
+  .court-divider{width:100%;height:14px;margin:8px 0 26px;position:relative;overflow:hidden;border-radius:3px;}
+  .court-divider svg{width:100%;height:100%;display:block;}
+
+  section{
+    background:var(--panel);
+    border:1px solid #1d4358;
+    border-radius:14px;
+    padding:22px 20px;
+    margin-bottom:22px;
+  }
+  h2{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 16px;
+    display:flex;align-items:center;gap:10px;
+  }
+  h2 .tag{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--bg);
+    background:var(--accent);
+    padding:2px 8px;
+    border-radius:20px;
+    letter-spacing:.05em;
+  }
+
+  .roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:640px){.roster-grid{grid-template-columns:1fr;}}
+  .roster{border-radius:10px;padding:16px;background:var(--panel-2);}
+  .roster h3{
+    font-family:'Oswald',sans-serif;font-size:15px;margin:0 0 12px;
+    display:flex;align-items:center;gap:8px;letter-spacing:.03em;text-transform:uppercase;
+  }
+  .roster.men h3{color:var(--men);}
+  .roster.women h3{color:var(--women);}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .roster.men .dot{background:var(--men);}
+  .roster.women .dot{background:var(--women);}
+
+  .add-row{display:flex;gap:8px;margin-bottom:12px;}
+  .add-row input{
+    flex:1;min-width:0;
+    background:var(--bg);
+    border:1px solid #234a5f;
+    color:var(--line);
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:14.5px;
+    font-family:'Inter',sans-serif;
+  }
+  .add-row input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .add-row button{
+    border:none;border-radius:8px;padding:0 16px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14px;
+    cursor:pointer;white-space:nowrap;
+  }
+  .roster.men .add-row button{background:var(--men);color:#fff;}
+  .roster.women .add-row button{background:var(--women);color:#fff;}
+
+  ul.player-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;min-height:14px;}
+  ul.player-list li{
+    background:var(--bg);
+    border:1px solid #234a5f;
+    border-radius:20px;
+    padding:6px 8px 6px 14px;
+    font-size:13.5px;
+    display:flex;align-items:center;gap:8px;
+  }
+  ul.player-list li button{
+    background:none;border:none;color:var(--muted);
+    cursor:pointer;font-size:15px;line-height:1;padding:2px;
+  }
+  ul.player-list li button:hover{color:var(--danger);}
+
+  .cta{
+    display:block;width:100%;margin-top:20px;
+    background:var(--accent);color:#0B1F2A;border:none;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;
+    letter-spacing:.03em;text-transform:uppercase;
+    padding:14px;border-radius:10px;cursor:pointer;
+  }
+  .cta:hover{filter:brightness(1.06);}
+  .cta:disabled{opacity:.5;cursor:not-allowed;}
+  .cta.secondary{background:transparent;border:1px solid #234a5f;color:var(--muted);text-transform:none;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;}
+
+  .error{color:var(--danger);font-size:13.5px;margin:10px 2px 0;min-height:14px;}
+  .hint{color:var(--muted);font-size:12.5px;margin-top:4px;}
+  .hint.persist{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel-2);border:1px dashed #234a5f;border-radius:8px;
+    padding:9px 12px;margin-top:14px;
+  }
+  .hint.persist svg{flex-shrink:0;}
+
+  .matches-list{display:flex;flex-direction:column;gap:12px;}
+  .match-card{
+    background:var(--panel-2);
+    border:1px solid #1d4358;
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .match-card.finished{border-color:var(--win);}
+  .match-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .match-num{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);}
+  .status{font-family:'Space Mono',monospace;font-size:11px;padding:3px 9px;border-radius:20px;letter-spacing:.04em;}
+  .status.ongoing{background:#234a5f;color:var(--accent);}
+  .status.done{background:var(--win);color:#0B1F2A;}
+  .rest-flag{
+    font-family:'Space Mono',monospace;font-size:10.5px;color:var(--accent);
+    background:rgba(201,231,107,0.1);border:1px solid #2a4a2f;
+    padding:2px 8px;border-radius:20px;letter-spacing:.03em;
+  }
+
+  .match-body{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;}
+  @media (max-width:520px){.match-body{grid-template-columns:1fr;}}
+  .team{
+    background:var(--bg);border-radius:10px;padding:12px;text-align:center;
+    border:1px solid #234a5f;
+  }
+  .team .players{font-size:13.5px;font-weight:600;line-height:1.5;margin-bottom:8px;min-height:38px;display:flex;flex-direction:column;justify-content:center;}
+  .team .players .p-men{color:var(--men);}
+  .team .players .p-women{color:var(--women);}
+  .team .score{
+    font-family:'Space Mono',monospace;font-weight:700;font-size:38px;
+    cursor:pointer;user-select:none;line-height:1;margin-bottom:8px;
+    transition:transform .08s ease;
+  }
+  .team .score:active{transform:scale(0.9);}
+  .team.winner .score{color:var(--win);}
+  .score-controls{display:flex;justify-content:center;gap:8px;}
+  .score-controls button{
+    border:none;border-radius:8px;width:40px;height:34px;font-size:16px;
+    cursor:pointer;font-weight:700;font-family:'Inter',sans-serif;
+  }
+  .btn-plus{background:var(--accent);color:#0B1F2A;}
+  .btn-minus{background:#234a5f;color:var(--line);}
+  .btn-plus:disabled, .btn-minus:disabled{opacity:.35;cursor:not-allowed;}
+
+  .vs-shuttle{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);}
+  .vs-shuttle span{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;}
+
+  .best-pair-banner{
+    background:linear-gradient(135deg, var(--panel-2), #0c2431);
+    border:1px solid var(--accent);
+    border-radius:12px;padding:16px 18px;margin-bottom:20px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .best-pair-banner .trophy{font-size:30px;flex-shrink:0;}
+  .best-pair-banner .txt .eyebrow2{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;}
+  .best-pair-banner .txt .names{font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;margin:2px 0;}
+  .best-pair-banner .txt .detail{font-size:12.5px;color:var(--muted);}
+  .best-pair-banner.empty{border-color:#234a5f;color:var(--muted);font-size:13.5px;}
+
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:700px){.stats-grid{grid-template-columns:1fr;}}
+  .stats-block h3{
+    font-family:'Oswald',sans-serif;font-size:15px;margin:0 0 10px;
+    text-transform:uppercase;letter-spacing:.03em;
+  }
+  .stats-block.men h3{color:var(--men);}
+  .stats-block.women h3{color:var(--women);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;
+    text-transform:uppercase;letter-spacing:.03em;
+    padding:6px 8px;border-bottom:1px solid #234a5f;
+  }
+  tbody td{padding:9px 8px;border-bottom:1px solid #1b3a4c;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.top-rank{background:rgba(201,231,107,0.08);}
+  td.num, th.num{text-align:right;font-family:'Space Mono',monospace;}
+  .empty-note{color:var(--muted);font-size:13px;padding:6px 2px;}
+
+  .reset-all{
+    display:block;margin:26px auto 0;background:none;border:1px solid #234a5f;
+    color:var(--muted);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;
+  }
+  .reset-all:hover{color:var(--danger);border-color:var(--danger);}
+
+  [hidden]{display:none !important;}
+
+  .sync-badge{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel-2);border:1px solid #234a5f;border-radius:8px;
+    padding:9px 12px;margin:0 0 18px;font-size:12.5px;color:var(--muted);
+  }
+  .sync-badge .dot2{width:8px;height:8px;border-radius:50%;background:var(--win);flex-shrink:0;animation:pulse2 1.6s infinite;}
+  .sync-badge.offline .dot2{background:var(--danger);animation:none;}
+  @keyframes pulse2{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .sync-badge b{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">MIXED DOUBLES · 15 POINTS</div>
+    <h1>ตารางแข่งขันแบดมินตันคู่ผสม</h1>
+    <p class="sub">กรอกรายชื่อนักกีฬาชายและหญิง ระบบจะสุ่มจับคู่ผสมให้ครบทุกคน โดยเรียงลำดับแมทช์ให้คู่เดิมและผู้เล่นคนเดิมไม่ต้องลงเล่นติดกัน 2 แมทช์รวด แข่งแบบเก็บแต้มถึง 15 จบเกม พร้อมสรุปคะแนนเฉลี่ยหาคู่ที่เหมาะจะได้อันดับ 1</p>
+    <div class="court-divider">
+      <svg viewBox="0 0 800 14" preserveAspectRatio="none">
+        <line x1="0" y1="7" x2="800" y2="7" stroke="#234a5f" stroke-width="2"/>
+        <line x1="0" y1="1" x2="0" y2="13" stroke="#234a5f" stroke-width="2"/>
+        <line x1="800" y1="1" x2="800" y2="13" stroke="#234a5f" stroke-width="2"/>
+        <line x1="400" y1="1" x2="400" y2="13" stroke="#C9E76B" stroke-width="2"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="sync-badge" id="syncBadge">
+    <span class="dot2"></span>
+    <span id="syncText">กำลังเชื่อมต่อ...</span>
+  </div>
+
+  <section id="setupSection">
+    <h2>รายชื่อนักกีฬา <span class="tag">STEP 1</span></h2>
+    <div class="roster-grid">
+      <div class="roster men">
+        <h3><span class="dot"></span>ผู้เล่นชาย</h3>
+        <div class="add-row">
+          <input id="menInput" type="text" placeholder="พิมพ์ชื่อนักกีฬาชาย" maxlength="30">
+          <button id="addMenBtn" type="button">+ เพิ่ม</button>
+        </div>
+        <ul class="player-list" id="menList"></ul>
+      </div>
+      <div class="roster women">
+        <h3><span class="dot"></span>ผู้เล่นหญิง</h3>
+        <div class="add-row">
+          <input id="womenInput" type="text" placeholder="พิมพ์ชื่อนักกีฬาหญิง" maxlength="30">
+          <button id="addWomenBtn" type="button">+ เพิ่ม</button>
+        </div>
+        <ul class="player-list" id="womenList"></ul>
+      </div>
+    </div>
+    <p class="hint">ต้องมีผู้เล่นอย่างน้อยฝั่งละ 2 คน ระบบจึงจะจับคู่ผสมและสร้างตารางแข่งขันให้ได้</p>
+    <button class="cta" id="generateBtn" type="button">สร้างตารางแข่งขัน</button>
+    <p class="error" id="setupError"></p>
+    <p class="hint persist" id="regenHint" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" stroke="#C9E76B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      รายชื่อนี้จะค้างอยู่แบบนี้เสมอ แก้ไข เพิ่ม หรือลบชื่อได้ตลอดเวลา แล้วกด "สร้างตารางแข่งขัน" ซ้ำเพื่ออัปเดตตาราง (คะแนนเดิมจะถูกล้างเมื่อสร้างใหม่) — กด "เริ่มต้นใหม่ทั้งหมด" ด้านล่างสุดถ้าต้องการล้างรายชื่อจริงๆ
+    </p>
+  </section>
+
+  <section id="scheduleSection" hidden>
+    <h2>ตารางการแข่งขัน (คู่ผสม) <span class="tag">STEP 2</span></h2>
+    <div class="matches-list" id="matchesList"></div>
+  </section>
+
+  <section id="statsSection" hidden>
+    <h2>สรุปคะแนน & คู่ที่เหมาะสมที่สุด <span class="tag">STEP 3</span></h2>
+    <div id="bestPairBanner"></div>
+    <div class="stats-grid">
+      <div class="stats-block men">
+        <h3>สถิติผู้เล่นชาย</h3>
+        <div id="menStatsWrap"></div>
+      </div>
+      <div class="stats-block women">
+        <h3>สถิติผู้เล่นหญิง</h3>
+        <div id="womenStatsWrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <button class="reset-all" id="resetAllBtn" type="button">↺ เริ่มต้นใหม่ทั้งหมด</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getDatabase, ref, set as fbSet, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyChPROtLBZaFznUJ734Q1U7DwEaVLjzPvs",
+    authDomain: "badminton-sports.firebaseapp.com",
+    databaseURL: "https://badminton-sports-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "badminton-sports",
+    storageBucket: "badminton-sports.firebasestorage.app",
+    messagingSenderId: "1010083245021",
+    appId: "1:1010083245021:web:ef4f316a029f2a7dce2434"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
+  const stateRef = ref(db, 'tournamentState');
+
+(function(){
+  const state = { men: [], women: [], matches: [], rev: 0 };
+  let saving = false;
+  let lastAppliedRev = 0;
+
+  const el = id => document.getElementById(id);
+  const menInput = el('menInput'), womenInput = el('womenInput');
+  const menList = el('menList'), womenList = el('womenList');
+  const setupError = el('setupError');
+  const syncBadge = el('syncBadge'), syncText = el('syncText');
+
+  function setSyncStatus(html, offline){
+    syncText.innerHTML = html;
+    syncBadge.classList.toggle('offline', !!offline);
+  }
+
+  // Push the current state to Firebase Realtime Database so every other
+  // person viewing this page gets it pushed to them instantly via onValue.
+  // Fails silently (offline etc.) — the UI still works locally, it just
+  // won't be shared until the write succeeds.
+  async function saveState(){
+    state.rev = Date.now();
+    lastAppliedRev = state.rev;
+    saving = true;
+    try{
+      await fbSet(stateRef, state);
+      setSyncStatus('<b>เรียลไทม์</b> · แชร์ลิงก์นี้ให้เพื่อนดูพร้อมกันได้');
+    }catch(e){
+      console.error('save failed', e);
+      setSyncStatus('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+    }finally{
+      saving = false;
+    }
+  }
+
+  function applyRemoteState(remote){
+    state.men = remote.men || [];
+    state.women = remote.women || [];
+    state.matches = remote.matches || [];
+    state.rev = remote.rev || Date.now();
+    lastAppliedRev = state.rev;
+    renderRosters();
+    const hasSchedule = state.matches.length > 0;
+    el('scheduleSection').hidden = !hasSchedule;
+    el('statsSection').hidden = !hasSchedule;
+    el('regenHint').hidden = !hasSchedule;
+    if(hasSchedule){ renderMatches(); renderStats(); }
+    else { matchesList.innerHTML = ''; }
+  }
+
+  // Realtime Database pushes changes to every connected client the instant
+  // they happen — no polling needed. onValue fires once immediately with
+  // whatever is currently stored, then again on every future change from
+  // any client.
+  function initSync(){
+    setSyncStatus('กำลังเชื่อมต่อ...');
+    onValue(stateRef, snapshot => {
+      const remote = snapshot.val();
+      if(remote){
+        if(!saving && (remote.rev || 0) > lastAppliedRev){
+          applyRemoteState(remote);
+        }
+        setSyncStatus('<b>เรียลไทม์</b> · แชร์ลิงก์นี้ให้เพื่อนดูพร้อมกันได้');
+      } else if(!saving){
+        // nothing stored yet on this board — initialize it
+        saveState();
+      }
+    }, (err) => {
+      console.error('sync error', err);
+      setSyncStatus('เชื่อมต่อไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต/Security Rules', true);
+    });
+  }
+
+  function normalizeName(n){ return n.trim().replace(/\s+/g,' '); }
+
+  function addPlayer(gender){
+    const input = gender === 'men' ? menInput : womenInput;
+    const name = normalizeName(input.value);
+    setupError.textContent = '';
+    if(!name){ return; }
+    const allNames = [...state.men, ...state.women];
+    if(allNames.includes(name)){
+      setupError.textContent = `มีชื่อ "${name}" อยู่แล้ว กรุณาใช้ชื่อไม่ซ้ำกัน`;
+      return;
+    }
+    state[gender].push(name);
+    input.value = '';
+    input.focus();
+    renderRosters();
+    saveState();
+  }
+
+  function removePlayer(gender, name){
+    state[gender] = state[gender].filter(n => n !== name);
+    renderRosters();
+    saveState();
+  }
+
+  function renderRosters(){
+    menList.innerHTML = state.men.map(n => playerChip(n,'men')).join('');
+    womenList.innerHTML = state.women.map(n => playerChip(n,'women')).join('');
+  }
+
+  function playerChip(name, gender){
+    return `<li>${escapeHtml(name)}<button type="button" data-remove="${gender}" data-name="${escapeHtml(name)}" aria-label="ลบ ${escapeHtml(name)}">×</button></li>`;
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  el('addMenBtn').addEventListener('click', () => addPlayer('men'));
+  el('addWomenBtn').addEventListener('click', () => addPlayer('women'));
+  menInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addPlayer('men'); }});
+  womenInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addPlayer('women'); }});
+
+  menList.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-remove]');
+    if(btn) removePlayer(btn.dataset.remove, btn.dataset.name);
+  });
+  womenList.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-remove]');
+    if(btn) removePlayer(btn.dataset.remove, btn.dataset.name);
+  });
+
+  // ---------- Schedule generation ----------
+  function teamKey(t){ return t.man + '||' + t.woman; }
+
+  function buildTeams(men, women){
+    const teams = [];
+    men.forEach(m => women.forEach(w => teams.push({ man:m, woman:w })));
+    return teams;
+  }
+
+  // Build the set of matches so every possible man+woman team plays at least
+  // once. When a team has to be reused as filler (uneven roster sizes), we
+  // always reuse whichever compatible team has played the FEWEST times so
+  // far, spreading extra matches evenly instead of piling them onto one pair
+  // and dragging the schedule out for a single team.
+  function buildSchedule(men, women){
+    const teams = buildTeams(men, women);
+    const playedCount = new Array(teams.length).fill(0);
+    const matches = [];
+    let guard = 0;
+    const maxGuard = teams.length * teams.length * 4 + 50;
+
+    while(playedCount.some(c => c === 0) && guard < maxGuard){
+      guard++;
+      const ai = playedCount.findIndex(c => c === 0);
+      const teamA = teams[ai];
+
+      let bi = -1, bestPlayed = Infinity;
+      for(let i=0;i<teams.length;i++){
+        if(i===ai) continue;
+        if(teams[i].man === teamA.man || teams[i].woman === teamA.woman) continue; // must share no player
+        if(playedCount[i] < bestPlayed){
+          bestPlayed = playedCount[i];
+          bi = i;
+          if(bestPlayed === 0) break;
+        }
+      }
+      if(bi === -1){
+        // no valid partner exists at all (shouldn't happen with >=2 men and >=2 women)
+        playedCount[ai] = 1;
+        continue;
+      }
+      matches.push({
+        teamA: { ...teams[ai] },
+        teamB: { ...teams[bi] },
+        scoreA: 0, scoreB: 0
+      });
+      playedCount[ai]++; playedCount[bi]++;
+    }
+    return matches;
+  }
+
+  // Reorder an unordered match list to maximize rest fairness across the
+  // WHOLE schedule, not just the single previous match. For every player we
+  // track how many slots have passed since they last played. At each step we
+  // pick the remaining match whose most-tired player (the one with the
+  // smallest rest gap) is as rested as possible — i.e. we maximize the
+  // minimum rest gap among the four players in the chosen match. This spreads
+  // playing time out evenly instead of just dodging the immediately previous
+  // match, so nobody quietly ends up playing far more back-to-back-ish
+  // stretches than everyone else.
+  function reorderForRest(matches){
+    const remaining = matches.slice();
+    const ordered = [];
+    const lastPlayedAt = new Map(); // player name -> index in `ordered` they last played
+    const NEVER_PLAYED = 1e9; // treat "hasn't played yet" as an enormous rest gap
+
+    const playersOf = m => [m.teamA.man, m.teamA.woman, m.teamB.man, m.teamB.woman];
+
+    const gapsFor = m => playersOf(m).map(p =>
+      lastPlayedAt.has(p) ? (ordered.length - lastPlayedAt.get(p)) : NEVER_PLAYED
+    );
+
+    while(remaining.length){
+      let bestIdx = 0, bestMinGap = -1, bestSumGap = -1;
+      for(let i=0;i<remaining.length;i++){
+        const gaps = gapsFor(remaining[i]);
+        const minGap = Math.min(...gaps);
+        const sumGap = gaps.reduce((a,b) => a+b, 0);
+        // Prefer the match whose least-rested player has waited longest;
+        // break ties by total rest across all four players.
+        if(minGap > bestMinGap || (minGap === bestMinGap && sumGap > bestSumGap)){
+          bestMinGap = minGap;
+          bestSumGap = sumGap;
+          bestIdx = i;
+        }
+      }
+      const chosen = remaining.splice(bestIdx, 1)[0];
+      chosen._backToBack = bestMinGap <= 1; // someone in this match played the immediately preceding match
+      ordered.push(chosen);
+      playersOf(chosen).forEach(p => lastPlayedAt.set(p, ordered.length - 1));
+    }
+    return ordered;
+  }
+
+  el('generateBtn').addEventListener('click', () => {
+    setupError.textContent = '';
+    if(state.men.length < 2 || state.women.length < 2){
+      setupError.textContent = 'กรุณาเพิ่มผู้เล่นอย่างน้อยฝั่งละ 2 คน ก่อนสร้างตารางแข่งขัน';
+      return;
+    }
+    const raw = buildSchedule(state.men, state.women);
+    const ordered = reorderForRest(raw);
+    state.matches = ordered.map((m, idx) => ({...m, id: idx}));
+    el('scheduleSection').hidden = false;
+    el('statsSection').hidden = false;
+    el('regenHint').hidden = false;
+    renderMatches();
+    renderStats();
+    saveState();
+    el('scheduleSection').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  // ---------- Match rendering & scoring ----------
+  const matchesList = el('matchesList');
+
+  function isFinished(m){ return m.scoreA >= 15 || m.scoreB >= 15; }
+
+  function renderMatches(){
+    matchesList.innerHTML = state.matches.map(matchCardHtml).join('');
+  }
+
+  function matchCardHtml(m){
+    const finished = isFinished(m);
+    const aWins = finished && m.scoreA > m.scoreB;
+    const bWins = finished && m.scoreB > m.scoreA;
+    return `
+    <div class="match-card ${finished ? 'finished' : ''}" data-match="${m.id}">
+      <div class="match-head">
+        <span class="match-num">แมทช์ที่ ${m.id + 1}</span>
+        <span style="display:flex;gap:8px;align-items:center;">
+          ${m._backToBack ? '<span class="rest-flag">ผู้เล่นบางคนพักไม่ทัน</span>' : ''}
+          <span class="status ${finished ? 'done' : 'ongoing'}">${finished ? 'จบเกม' : 'กำลังแข่งขัน'}</span>
+        </span>
+      </div>
+      <div class="match-body">
+        <div class="team ${aWins ? 'winner' : ''}">
+          <div class="players"><span class="p-men">${escapeHtml(m.teamA.man)}</span><span class="p-women">${escapeHtml(m.teamA.woman)}</span></div>
+          <div class="score" data-side="A" data-match="${m.id}" role="button" tabindex="0">${m.scoreA}</div>
+          <div class="score-controls">
+            <button class="btn-minus" data-act="minus" data-side="A" data-match="${m.id}" ${m.scoreA<=0?'disabled':''}>−</button>
+            <button class="btn-plus" data-act="plus" data-side="A" data-match="${m.id}" ${finished?'disabled':''}>+1</button>
+          </div>
+        </div>
+        <div class="vs-shuttle">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4" fill="#C9E76B"/><path d="M12 11 L6 21 M12 11 L9 22 M12 11 L15 22 M12 11 L18 21" stroke="#C9E76B" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span>VS</span>
+        </div>
+        <div class="team ${bWins ? 'winner' : ''}">
+          <div class="players"><span class="p-men">${escapeHtml(m.teamB.man)}</span><span class="p-women">${escapeHtml(m.teamB.woman)}</span></div>
+          <div class="score" data-side="B" data-match="${m.id}" role="button" tabindex="0">${m.scoreB}</div>
+          <div class="score-controls">
+            <button class="btn-minus" data-act="minus" data-side="B" data-match="${m.id}" ${m.scoreB<=0?'disabled':''}>−</button>
+            <button class="btn-plus" data-act="plus" data-side="B" data-match="${m.id}" ${finished?'disabled':''}>+1</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function changeScore(matchId, side, delta){
+    const m = state.matches.find(x => x.id === matchId);
+    if(!m) return;
+    const key = side === 'A' ? 'scoreA' : 'scoreB';
+    if(delta > 0){
+      if(isFinished(m)) return; // game already decided
+      m[key] = m[key] + 1;
+    } else {
+      m[key] = Math.max(0, m[key] - 1);
+    }
+    renderMatches();
+    renderStats();
+    saveState();
+  }
+
+  matchesList.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]');
+    if(btn){
+      const matchId = Number(btn.dataset.match);
+      const side = btn.dataset.side;
+      changeScore(matchId, side, btn.dataset.act === 'plus' ? 1 : -1);
+      return;
+    }
+    const scoreEl = e.target.closest('.score[data-side]');
+    if(scoreEl){
+      const matchId = Number(scoreEl.dataset.match);
+      const side = scoreEl.dataset.side;
+      changeScore(matchId, side, 1);
+    }
+  });
+  matchesList.addEventListener('keydown', e => {
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const scoreEl = e.target.closest('.score[data-side]');
+    if(scoreEl){
+      e.preventDefault();
+      changeScore(Number(scoreEl.dataset.match), scoreEl.dataset.side, 1);
+    }
+  });
+
+  // ---------- Stats ----------
+  function computeStats(){
+    const menStats = new Map(state.men.map(n => [n, {name:n, games:0, points:0, against:0, wins:0}]));
+    const womenStats = new Map(state.women.map(n => [n, {name:n, games:0, points:0, against:0, wins:0}]));
+    const teamStats = new Map(); // key -> {man, woman, games, points, against, wins}
+
+    state.matches.forEach(m => {
+      if(!isFinished(m)) return;
+      const aWin = m.scoreA > m.scoreB ? 1 : 0;
+      const bWin = m.scoreB > m.scoreA ? 1 : 0;
+
+      // individual: team A
+      if(menStats.has(m.teamA.man)){
+        const s = menStats.get(m.teamA.man);
+        s.games++; s.points += m.scoreA; s.against += m.scoreB; s.wins += aWin;
+      }
+      if(womenStats.has(m.teamA.woman)){
+        const s = womenStats.get(m.teamA.woman);
+        s.games++; s.points += m.scoreA; s.against += m.scoreB; s.wins += aWin;
+      }
+      // individual: team B
+      if(menStats.has(m.teamB.man)){
+        const s = menStats.get(m.teamB.man);
+        s.games++; s.points += m.scoreB; s.against += m.scoreA; s.wins += bWin;
+      }
+      if(womenStats.has(m.teamB.woman)){
+        const s = womenStats.get(m.teamB.woman);
+        s.games++; s.points += m.scoreB; s.against += m.scoreA; s.wins += bWin;
+      }
+
+      // team-level aggregation
+      [ {t:m.teamA, pts:m.scoreA, opp:m.scoreB, win:aWin},
+        {t:m.teamB, pts:m.scoreB, opp:m.scoreA, win:bWin} ].forEach(({t,pts,opp,win}) => {
+        const k = teamKey(t);
+        if(!teamStats.has(k)) teamStats.set(k, {man:t.man, woman:t.woman, games:0, points:0, against:0, wins:0});
+        const ts = teamStats.get(k);
+        ts.games++; ts.points += pts; ts.against += opp; ts.wins += win;
+      });
+    });
+
+    return { menStats: [...menStats.values()], womenStats: [...womenStats.values()], teamStats: [...teamStats.values()] };
+  }
+
+  function fmt1(n){ return (Math.round(n*10)/10).toFixed(1); }
+
+  function statsTableHtml(rows){
+    const withGames = rows.filter(r => r.games > 0);
+    if(withGames.length === 0){
+      return `<p class="empty-note">ยังไม่มีผลการแข่งขันที่จบ (ครบ 15 แต้ม) สำหรับกลุ่มนี้</p>`;
+    }
+    const sorted = [...rows].sort((a,b) => {
+      if(b.wins !== a.wins) return b.wins - a.wins;
+      const avgA = a.games ? (a.points-a.against)/a.games : -999;
+      const avgB = b.games ? (b.points-b.against)/b.games : -999;
+      return avgB - avgA;
+    });
+    const top = sorted.find(r => r.games>0);
+    return `
+    <table>
+      <thead><tr>
+        <th>ชื่อ</th><th class="num">แข่ง</th><th class="num">ชนะ</th><th class="num">แต้มเฉลี่ย</th><th class="num">ผลต่างเฉลี่ย</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map(r => {
+          if(r.games === 0) return `<tr><td>${escapeHtml(r.name)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>`;
+          const avgPts = r.points / r.games;
+          const avgDiff = (r.points - r.against) / r.games;
+          const isTop = top && r.wins === top.wins && avgDiff === (top.points-top.against)/top.games;
+          return `<tr class="${isTop ? 'top-rank' : ''}">
+            <td>${escapeHtml(r.name)}</td>
+            <td class="num">${r.games}</td>
+            <td class="num">${r.wins}</td>
+            <td class="num">${fmt1(avgPts)}</td>
+            <td class="num">${avgDiff>=0?'+':''}${fmt1(avgDiff)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  function bestPairBannerHtml(teamStats){
+    const finished = teamStats.filter(t => t.games > 0);
+    if(finished.length === 0){
+      return `<div class="best-pair-banner empty">ยังไม่มีคู่ใดจบเกม (ครบ 15 แต้ม) — เล่นให้จบอย่างน้อย 1 แมทช์เพื่อดูคู่ที่เหมาะสมที่สุด</div>`;
+    }
+    const sorted = [...finished].sort((a,b) => {
+      const wrA = a.wins / a.games, wrB = b.wins / b.games;
+      if(wrB !== wrA) return wrB - wrA;
+      const diffA = (a.points - a.against)/a.games, diffB = (b.points-b.against)/b.games;
+      return diffB - diffA;
+    });
+    const top = sorted[0];
+    const diff = (top.points - top.against) / top.games;
+    return `
+    <div class="best-pair-banner">
+      <div class="trophy">🏆</div>
+      <div class="txt">
+        <div class="eyebrow2">คู่ที่เหมาะสมที่สุดสำหรับอันดับ 1</div>
+        <div class="names"><span style="color:var(--men)">${escapeHtml(top.man)}</span> &amp; <span style="color:var(--women)">${escapeHtml(top.woman)}</span></div>
+        <div class="detail">ชนะ ${top.wins}/${top.games} แมทช์ · แต้มเฉลี่ย ${fmt1(top.points/top.games)} · ผลต่างเฉลี่ย ${diff>=0?'+':''}${fmt1(diff)}</div>
+      </div>
+    </div>`;
+  }
+
+  function renderStats(){
+    const { menStats, womenStats, teamStats } = computeStats();
+    el('menStatsWrap').innerHTML = statsTableHtml(menStats);
+    el('womenStatsWrap').innerHTML = statsTableHtml(womenStats);
+    el('bestPairBanner').innerHTML = bestPairBannerHtml(teamStats);
+  }
+
+  // ---------- Reset ----------
+  el('resetAllBtn').addEventListener('click', () => {
+    if(!confirm('ต้องการเริ่มต้นใหม่ทั้งหมดหรือไม่? รายชื่อ ตารางแข่ง และคะแนนทั้งหมดจะถูกล้าง')) return;
+    state.men = []; state.women = []; state.matches = [];
+    renderRosters();
+    el('scheduleSection').hidden = true;
+    el('statsSection').hidden = true;
+    el('regenHint').hidden = true;
+    matchesList.innerHTML = '';
+    setupError.textContent = '';
+    window.scrollTo({top:0, behavior:'smooth'});
+    saveState();
+  });
+
+  renderRosters();
+  initSync();
+})();
+</script>
+</body>
+</html>
