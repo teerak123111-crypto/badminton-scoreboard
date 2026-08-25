@@ -470,44 +470,94 @@
     return teams;
   }
 
+  // Fisher-Yates shuffle — randomizes team order before matching so that,
+  // among options that are equally fair, who gets paired first isn't always
+  // alphabetical / the same every time you regenerate.
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
   // Build the set of matches so every possible man+woman team plays at least
-  // once. When a team has to be reused as filler (uneven roster sizes), we
-  // always reuse whichever compatible team has played the FEWEST times so
-  // far, spreading extra matches evenly instead of piling them onto one pair
-  // and dragging the schedule out for a single team.
+  // once. With uneven roster sizes (e.g. 5 men, 4 women) some teams must be
+  // reused as filler — when that happens we don't just look at how many
+  // times the TEAM has played, we look at how many matches each INDIVIDUAL
+  // PLAYER has played so far (Player Play Count) and pick whichever valid
+  // partner keeps everyone's personal match count as even as possible.
+  // That way nobody quietly ends up playing (or sitting out) far more than
+  // everyone else, and the same two people don't keep getting reused as the
+  // same filler pair over and over.
   function buildSchedule(men, women){
-    const teams = buildTeams(men, women);
-    const playedCount = new Array(teams.length).fill(0);
+    const teams = shuffle(buildTeams(men, women));
+    const teamPlayed = new Array(teams.length).fill(0);
+    const playerCount = new Map();
+    [...men, ...women].forEach(p => playerCount.set(p, 0));
     const matches = [];
     let guard = 0;
     const maxGuard = teams.length * teams.length * 4 + 50;
 
-    while(playedCount.some(c => c === 0) && guard < maxGuard){
+    // Resulting max individual play count if teamA+teamB play next — lower
+    // is better, since it keeps everyone's personal count as balanced as
+    // possible.
+    const scoreCandidate = (teamA, teamB) => Math.max(
+      playerCount.get(teamA.man) + 1,
+      playerCount.get(teamA.woman) + 1,
+      playerCount.get(teamB.man) + 1,
+      playerCount.get(teamB.woman) + 1
+    );
+
+    while(teamPlayed.some(c => c === 0) && guard < maxGuard){
       guard++;
-      const ai = playedCount.findIndex(c => c === 0);
+      const ai = teamPlayed.findIndex(c => c === 0);
       const teamA = teams[ai];
 
-      let bi = -1, bestPlayed = Infinity;
+      let bestUnplayedScore = Infinity, bestUnplayedIdx = -1;
+      let bestAnyScore = Infinity, bestAnyPlayed = Infinity, bestAnyIdx = -1;
+
       for(let i=0;i<teams.length;i++){
         if(i===ai) continue;
-        if(teams[i].man === teamA.man || teams[i].woman === teamA.woman) continue; // must share no player
-        if(playedCount[i] < bestPlayed){
-          bestPlayed = playedCount[i];
-          bi = i;
-          if(bestPlayed === 0) break;
+        const teamB = teams[i];
+        if(teamB.man === teamA.man || teamB.woman === teamA.woman) continue; // must share no player
+        const score = scoreCandidate(teamA, teamB);
+
+        // Priority 1: partner team that hasn't played yet at all — keeps
+        // covering every unique pairing at least once.
+        if(teamPlayed[i] === 0 && score < bestUnplayedScore){
+          bestUnplayedScore = score;
+          bestUnplayedIdx = i;
+        }
+        // Priority 2 (fallback for filler): whichever valid partner keeps
+        // individual play counts most balanced, tie-broken by reusing
+        // whichever team-combo has been reused the least so far (so the
+        // same duo isn't repeatedly forced together).
+        if(score < bestAnyScore || (score === bestAnyScore && teamPlayed[i] < bestAnyPlayed)){
+          bestAnyScore = score;
+          bestAnyPlayed = teamPlayed[i];
+          bestAnyIdx = i;
         }
       }
+      const bi = bestUnplayedIdx !== -1 ? bestUnplayedIdx : bestAnyIdx;
+
       if(bi === -1){
         // no valid partner exists at all (shouldn't happen with >=2 men and >=2 women)
-        playedCount[ai] = 1;
+        teamPlayed[ai] = 1;
         continue;
       }
+      const teamB = teams[bi];
       matches.push({
-        teamA: { ...teams[ai] },
-        teamB: { ...teams[bi] },
+        teamA: { ...teamA },
+        teamB: { ...teamB },
         scoreA: 0, scoreB: 0
       });
-      playedCount[ai]++; playedCount[bi]++;
+      teamPlayed[ai]++; teamPlayed[bi]++;
+      playerCount.set(teamA.man, playerCount.get(teamA.man)+1);
+      playerCount.set(teamA.woman, playerCount.get(teamA.woman)+1);
+      playerCount.set(teamB.man, playerCount.get(teamB.man)+1);
+      playerCount.set(teamB.woman, playerCount.get(teamB.woman)+1);
     }
     return matches;
   }
